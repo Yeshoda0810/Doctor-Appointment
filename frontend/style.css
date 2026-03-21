@@ -1,0 +1,26 @@
+body {
+  font-family: Arial;
+  background: linear-gradient(to right, #74ebd5, #ACB6E5);
+  text-align: center;
+}
+
+form, .card {
+  background: white;
+  padding: 20px;
+  margin: 20px auto;
+  width: 300px;
+  border-radius: 15px;
+  box-shadow: 0 0 15px gray;
+}
+
+button {
+  background: #4CAF50;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+}
+
+button:hover {
+  background: #45a049;
+}
