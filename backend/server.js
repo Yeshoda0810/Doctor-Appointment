@@ -4,32 +4,33 @@ const mongoose = require("mongoose");
 
 const app = express();
 
-// ✅ CORS FIX (important)
+// ✅ Middleware
 app.use(cors({
   origin: "*"
 }));
-
 app.use(express.json());
 
 // ✅ MongoDB Connection
-mongoose.connect("mongodb+srv://yashoda83741_db_user:Yashoda2024@yeshoda.47jpted.mongodb.net/doctorDB")
+mongoose.connect("mongodb+srv://yashoda83741_db_user:Yashoda2024@yeshoda.47jpted.mongodb.net/doctorDB", {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
 .then(() => console.log("MongoDB connected"))
 .catch(err => console.log(err));
 
-// ✅ User Schema
+// ✅ Schemas
 const userSchema = new mongoose.Schema({
   name: String,
   email: String,
   password: String
 });
 
-const User = mongoose.model("User", userSchema);
-
-// ✅ Appointment Schema
 const appointmentSchema = new mongoose.Schema({
   doctor: String
 });
 
+// ✅ Models
+const User = mongoose.model("User", userSchema);
 const Appointment = mongoose.model("Appointment", appointmentSchema);
 
 // ✅ Test route
@@ -39,33 +40,54 @@ app.get("/", (req, res) => {
 
 // ✅ Register
 app.post("/register", async (req, res) => {
-  const { name, email, password } = req.body;
+  try {
+    const { name, email, password } = req.body;
 
-  await User.create({ name, email, password });
+    await User.create({ name, email, password });
 
-  res.send("User registered successfully");
+    res.send("User registered successfully");
+  } catch (err) {
+    res.status(500).send("Error registering user");
+  }
 });
 
 // ✅ Login
 app.post("/login", async (req, res) => {
-  const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
 
-  const user = await User.findOne({ email, password });
+    const user = await User.findOne({ email, password });
 
-  if (user) {
-    res.send("Login successful");
-  } else {
-    res.send("Invalid credentials");
+    if (user) {
+      res.send("Login successful");
+    } else {
+      res.send("Invalid credentials");
+    }
+  } catch (err) {
+    res.status(500).send("Error logging in");
   }
 });
 
 // ✅ Book Appointment
 app.post("/book", async (req, res) => {
-  const { doctor } = req.body;
+  try {
+    const { doctor } = req.body;
 
-  await Appointment.create({ doctor });
+    await Appointment.create({ doctor });
 
-  res.send("Appointment booked with " + doctor);
+    res.send("Appointment booked with " + doctor);
+  } catch (err) {
+    res.status(500).send("Error booking appointment");
+  }
+});
+
+// ✅ OPTIONAL (for browser testing)
+app.get("/login", (req, res) => {
+  res.send("Login API working");
+});
+
+app.get("/register", (req, res) => {
+  res.send("Register API working");
 });
 
 // ✅ Server
