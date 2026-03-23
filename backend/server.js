@@ -1,32 +1,14 @@
 const express = require("express");
 const cors = require("cors");
-const mongoose = require("mongoose");
 
 const app = express();
 
-// ✅ Middleware
 app.use(cors());
 app.use(express.json());
 
-// ✅ MongoDB Connection
-mongoose.connect("mongodb+srv://yashoda83741_db_user:Yeshodagantyada2026@yeshoda.47jpted.mongodb.net/doctorDB?retryWrites=true&w=majority")
-.then(() => console.log("MongoDB connected"))
-.catch(err => console.log("Mongo Error:", err));
-
-// ✅ Schemas
-const userSchema = new mongoose.Schema({
-  name: String,
-  email: String,
-  password: String
-});
-
-const appointmentSchema = new mongoose.Schema({
-  doctor: String
-});
-
-// ✅ Models
-const User = mongoose.model("User", userSchema);
-const Appointment = mongoose.model("Appointment", appointmentSchema);
+// ✅ Temporary storage (no DB)
+let users = [];
+let appointments = [];
 
 // ✅ Test
 app.get("/", (req, res) => {
@@ -34,57 +16,49 @@ app.get("/", (req, res) => {
 });
 
 // ✅ Register
-app.post("/register", async (req, res) => {
-  try {
-    console.log(req.body); // DEBUG
+app.post("/register", (req, res) => {
+  const { name, email, password } = req.body;
 
-    const { name, email, password } = req.body;
-
-    if (!name || !email || !password) {
-      return res.send("All fields required");
-    }
-
-    await User.create({ name, email, password });
-
-    res.send("User registered successfully");
-  } catch (err) {
-    console.log("Register Error:", err);
-    res.status(500).send("Server error");
+  if (!name || !email || !password) {
+    return res.send("All fields required ❌");
   }
+
+  const existingUser = users.find(u => u.email === email);
+  if (existingUser) {
+    return res.send("User already exists ⚠️");
+  }
+
+  users.push({ name, email, password });
+
+  res.send("User registered successfully ✅");
 });
 
 // ✅ Login
-app.post("/login", async (req, res) => {
-  try {
-    console.log(req.body); // DEBUG
+app.post("/login", (req, res) => {
+  const { email, password } = req.body;
 
-    const { email, password } = req.body;
+  const user = users.find(
+    u => u.email === email && u.password === password
+  );
 
-    const user = await User.findOne({ email, password });
-
-    if (user) {
-      res.send("Login successful");
-    } else {
-      res.send("Invalid credentials");
-    }
-  } catch (err) {
-    console.log("Login Error:", err);
-    res.status(500).send("Server error");
+  if (user) {
+    res.send("Login successful ✅");
+  } else {
+    res.send("Invalid credentials ❌");
   }
 });
 
-// ✅ Book
-app.post("/book", async (req, res) => {
-  try {
-    const { doctor } = req.body;
+// ✅ Book Appointment
+app.post("/book", (req, res) => {
+  const { doctor } = req.body;
 
-    await Appointment.create({ doctor });
-
-    res.send("Appointment booked with " + doctor);
-  } catch (err) {
-    console.log("Booking Error:", err);
-    res.status(500).send("Server error");
+  if (!doctor) {
+    return res.send("Select doctor ❌");
   }
+
+  appointments.push({ doctor });
+
+  res.send("Appointment booked with " + doctor + " ✅");
 });
 
 // ✅ Server
